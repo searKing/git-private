@@ -1,6 +1,6 @@
 #!/bin/bash
 . ./src/bash/log_util.sh
-git reset ---hard
+git reset --hard
 ret=$?
 if [ $ret -ne 0 ]; then
 	log_error "${LINENO}:  failed : $ret.EXIT"
