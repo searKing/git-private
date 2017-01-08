@@ -1,4 +1,29 @@
 #!/bin/bash
+if [ "$GIT_SSL_H" ]; then
+        return
+fi
+
+export GIT_SSL_H="git_ssl.sh"
+echo "include $GIT_SSL_H"
+
+# 获取当前脚本的相对路径文件名称
+CURRENT_FILE="${BASH_SOURCE-$0}"
+# 获取当前脚本的相对路径
+CURRENT_FILE_REF_DIR=`dirname ${CURRENT_FILE}`
+# 获取当前脚本的绝对路径
+CURRENT_FILE_ABS_DIR=`cd ${CURRENT_FILE_REF_DIR}; pwd`
+# 获取当前脚本的名称
+CURRENT_FILE_BASE_NAME=`basename ${CURRENT_FILE}`
+# 备份当前路径
+STACK_ABS_DIR=`pwd`
+# 路径隔离
+cd "${CURRENT_FILE_REF_DIR}"
+function safe_exit()
+{
+    cd "${STACK_ABS_DIR}"
+    exit $1
+}
+
 . log_util.sh
 #使用方法说明
 function usage() {
@@ -309,7 +334,7 @@ function git_add_changes()
             if [ $ret -ne 0 ]; then
                 log_error "${LINENO}: git add "${iter_dst_dir}/*" -f failed : $ret.EXIT"
                 git reset --hard
-                exit 1
+                safe_exit 1
             fi
 
         fi  
@@ -328,7 +353,7 @@ if [ "$#" -lt 1 ]; then
 	cat << HELPEOF
 use option -h to get more log_information.  
 HELPEOF
-	exit 1  
+	safe_exit 1  
 fi   	
 set_default_cfg_param #设置默认配置参数	
 set_default_var_param #设置默认变量参数
@@ -341,7 +366,7 @@ do
 		;;
 	h)  
 		usage
-		exit 1  
+		safe_exit 1  
 		;;  	
 	?)
 		log_error "${LINENO}:$opt is Invalid"
@@ -357,7 +382,7 @@ if [ "$#" -lt 1 ]; then
 	cat << HELPEOF
 use option -h to get more log_information .  
 HELPEOF
-	exit 0  
+	safe_exit 0  
 fi   
 #获取当前动作
 git_wrap_action="$1"
@@ -371,25 +396,25 @@ case ${git_wrap_action} in
 	"create_key_pairs" )
 		create_key_pairs "$@"
 		if [ $? -ne 0 ]; then
-			exit 1
+			safe_exit 1
 		fi
 		;;  
 	"compress_and_encrypt" )
 		compress_and_encrypt "$@"
 		if [ $? -ne 0 ]; then
-			exit 1
+			safe_exit 1
 		fi
 		;;  
 	"decrypt_and_decompress" )
 		decrypt_and_decompress "$@"
 		if [ $? -ne 0 ]; then
-			exit 1
+			safe_exit 1
 		fi
 		;;
 	"git_add_changes" )
 		git_add_changes "$@"
 		if [ $? -ne 0 ]; then
-			exit 1
+			safe_exit 1
 		fi
 		;;
 	* )    
@@ -397,9 +422,9 @@ case ${git_wrap_action} in
 ${git_wrap_action} is unsupported.
 use option -h to get more log_information .  
 HELPEOF
-		exit 1
+		safe_exit 1
 		;;
 esac
 log_info "$0 $@ running success"
 # read -n1 -p "Press any key to continue..."
-exit 0 
+safe_exit 0 

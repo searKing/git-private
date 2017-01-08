@@ -1,21 +1,46 @@
 #!/bin/bash
+if [ "$GIT_PRIVATE_INSTALL_H" ]; then
+        return
+fi
+
+export GIT_PRIVATE_INSTALL_H="install.sh"
+echo "include $GIT_PRIVATE_INSTALL_H"
+
+# 获取当前脚本的相对路径文件名称
+CURRENT_FILE="${BASH_SOURCE-$0}"
+# 获取当前脚本的相对路径
+CURRENT_FILE_REF_DIR=`dirname ${CURRENT_FILE}`
+# 获取当前脚本的绝对路径
+CURRENT_FILE_ABS_DIR=`cd ${CURRENT_FILE_REF_DIR}; pwd`
+# 获取当前脚本的名称
+CURRENT_FILE_BASE_NAME=`basename ${CURRENT_FILE}`
+# 备份当前路径
+STACK_ABS_DIR=`pwd`
+# 路径隔离
+cd "${CURRENT_FILE_REF_DIR}"
+function safe_exit()
+{
+    cd "${STACK_ABS_DIR}"
+    safe_exit $1
+}
+
 . ./src/bash/log_util.sh
 ret=$?
 if [ $ret -ne 0 ]; then
 	log_error "${LINENO}:  failed. EXIT"
-	exit 1
+	safe_exit 1
 fi
 
 git reset --hard
 ret=$?
 if [ $ret -ne 0 ]; then
-	log_error "${LINENO}:  failed : $ret. EXIT"
-	exit 1
+	log_error "[${FUNCNAME}]${LINENO}:  failed : $ret. EXIT"
+	safe_exit 1
 fi
 
 if [[ "$(pwd)"x == "/"x ]]; then
 	log_error "${LINENO}:  current dir is /, no parent dir. EXIT"
-	exit 1
+	safe_exit 1
 fi
 
 private_prj_exist=0
@@ -29,7 +54,7 @@ done
 
 if [[ ${private_prj_exist} -eq 0 ]]; then
 	log_error "${LINENO}:  private prj is not exist. EXIT"
-	exit 1
+	safe_exit 1
 fi
 
 prj_name=$(cd ../;pwd)
@@ -46,4 +71,4 @@ do
 done
 log_info "$0 $@ running success"
 # read -n1 -p "Press any key to continue..."
-exit 0 
+safe_exit 0 
