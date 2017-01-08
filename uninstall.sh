@@ -72,10 +72,10 @@ do
 done
 for file in $(ls ./src/bash)
 do
-	if [ "${file}"x == "."x || "${file}"x == ".."x ]; then
+	if [[ "${file}"x == "."x || "${file}"x == ".."x ]]; then
 		continue
 	fi
-	if [ -f "../.git/hooks/${file}" || -d "../.git/hooks/${file}" ]; then
+	if [[ -f "../.git/hooks/${file}" || -d "../.git/hooks/${file}" ]]; then
 		rm  "../.git/hooks/${file}" -Rvf
 	fi
 done
