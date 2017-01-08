@@ -68,7 +68,7 @@ do
 	if [[ -f "../.git/hooks/$file" ]]; then
 		cp "../.git/hooks/$file" "../.git/hooks/${file}.bak" -Rvf
 	fi
-	ln -s -f "$file" "../.git/hooks/${file}"
+	cp -Rvf "./hooks/${file}" "../.git/hooks/${file}"
 done
 log_info "$0 $@ running success"
 # read -n1 -p "Press any key to continue..."
