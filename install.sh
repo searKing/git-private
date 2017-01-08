@@ -21,7 +21,7 @@ cd "${GIT_PRIVATE_INSTALL_FILE_REF_DIR}"
 function safe_exit()
 {
     cd "${STACK_ABS_DIR}"
-    safe_exit $1
+    exit $1
 }
 
 GIT_PRIVATE_UNINSTALL_H=""
