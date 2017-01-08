@@ -70,7 +70,7 @@ do
 	fi
 	cp "../.git/hooks/${file}" "../.git/hooks/${file%%.bak}" -Rvf
 done
-for file in $(ls ../src/bash)
+for file in $(ls ./src/bash)
 do
 	if [ -d "${file}" ]; then
 		continue
