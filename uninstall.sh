@@ -72,10 +72,12 @@ do
 done
 for file in $(ls ./src/bash)
 do
-	if [ -d "${file}" ]; then
+	if [ ( "${file}"x == "."x ) || ( "${file}"x == ".."x ) ]; then
 		continue
 	fi
-	rm  "../.git/hooks/${file}" -Rvf
+	if [ ( -f "../.git/hooks/${file}" ) || ( -d "../.git/hooks/${file}" )]; then
+		rm  "../.git/hooks/${file}" -Rvf
+	fi
 done
 log_info "${LINENO}: copying hooks's shell scripts..."
 cp -Rvf ./src/bash/* ../.git/hooks/
