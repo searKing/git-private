@@ -29,11 +29,11 @@ function safe_exit()
 function usage() {
 	cat<<USAGEEOF	
 NAME  
-    $g_git_wrap_shell_name - 自动将当前文件夹下所有文件采用openssl进行加密
+    $GIT_SSL_FILE_BASE_NAME - 自动将当前文件夹下所有文件采用openssl进行加密
 SYNOPSIS  
-    $g_git_wrap_shell_name [命令列表] [文件名]...   
+    $GIT_SSL_FILE_BASE_NAME [命令列表] [文件名]...   
 DESCRIPTION  
-	$g_git_wrap_shell_name --将git仓库加密到托管在Github.com上的root git仓库中 
+	$GIT_SSL_FILE_BASE_NAME --将git仓库加密到托管在Github.com上的root git仓库中 
 		-h 
 			get help log_info
 		-f 
@@ -89,10 +89,6 @@ function set_default_cfg_param(){
 #		|-repo_name
 #设置默认变量参数
 function set_default_var_param(){	
-	g_git_wrap_shell_name="$(basename $0)" #获取当前脚本名称
-	#切换并获取当前脚本所在路径
-	g_git_wrap_repositories_abs_dir="$(cd `dirname $0`; pwd)"
-	
 	#私有库所在公有库的根目录，之后的私有库repo全部以加密文件的形式存放在该公有目录下
 	g_key_root_dir="keyRoot" #加解密库公私钥所在目录
 	g_git_private_key_name="git.private.pem" #解密库私钥名称

@@ -43,7 +43,7 @@ function log()
     fi
 
     if [[ -z "$basedir" || ""x == "$basedir"x ]]; then
-        basedir="$(cd `dirname $0`; pwd)"
+        basedir="${LOG_UTIL_FILE_ABS_DIR}"
     fi
 
     local outdir="$basedir/log"
