@@ -2,6 +2,7 @@
 echo “post-commit $@”
 commit_msg=$(cat .git/COMMIT_EDITMSG)
 pwd
+. ./.git/log_util.sh
 if [ ! -d "KeyRoot" ]; then
     ./.git/hooks/git_ssl.sh create_key_pairs - - -
     ret=$?

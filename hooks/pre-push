@@ -23,7 +23,7 @@ remote="$1"
 url="$2"
 
 pwd
-cd ../
+. ./.git/log_util.sh
 
 git push -f "$remote" master
 ret=$?
