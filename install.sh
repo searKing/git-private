@@ -1,14 +1,20 @@
 #!/bin/bash
 . ./src/bash/log_util.sh
+ret=$?
+if [ $ret -ne 0 ]; then
+	log_error "${LINENO}:  failed. EXIT"
+	exit 1
+fi
+
 git reset --hard
 ret=$?
 if [ $ret -ne 0 ]; then
-	log_error "${LINENO}:  failed : $ret.EXIT"
+	log_error "${LINENO}:  failed : $ret. EXIT"
 	exit 1
 fi
 
 if [[ "$(pwd)"x == "/"x ]]; then
-	log_error "${LINENO}:  current dir is /, no parent dir.EXIT"
+	log_error "${LINENO}:  current dir is /, no parent dir. EXIT"
 	exit 1
 fi
 
@@ -22,13 +28,13 @@ do
 done
 
 if [[ ${private_prj_exist} -eq 0 ]]; then
-	log_error "${LINENO}:  private prj is not exist.EXIT"
+	log_error "${LINENO}:  private prj is not exist. EXIT"
 	exit 1
 fi
 
 prj_name=$(cd ../;pwd)
 prj_name=${prj_name##*/}
-log_info "${LINENO}:  private prj: ${prj_name} is found.EXIT"
+log_info "${LINENO}:  private prj: ${prj_name} is found. EXIT"
 
 for file in $(ls ./hooks/)
 do

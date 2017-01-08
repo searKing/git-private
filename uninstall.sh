@@ -1,4 +1,11 @@
 #!/bin/bash
+. ./src/bash/log_util.sh
+ret=$?
+if [ $ret -ne 0 ]; then
+	log_error "${LINENO}:  failed. EXIT"
+	exit 1
+fi
+
 git reset --hard
 ret=$?
 if [ $ret -ne 0 ]; then
