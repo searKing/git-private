@@ -18,11 +18,11 @@ CURRENT_FILE_BASE_NAME=`basename ${CURRENT_FILE}`
 STACK_ABS_DIR=`pwd`
 # 路径隔离
 cd "${CURRENT_FILE_REF_DIR}"
-function safe_exit()
-{
-    cd "${STACK_ABS_DIR}"
-    exit $1
-}
+# function safe_exit()
+# {
+#     cd "${STACK_ABS_DIR}"
+#     exit $1
+# }
 
 . string_util.sh
 
@@ -74,4 +74,4 @@ function log_warn()
         log "$1" "WARN"
 }
 
-safe_exit 0
+cd "${STACK_ABS_DIR}"
