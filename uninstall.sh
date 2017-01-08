@@ -7,20 +7,20 @@ export GIT_PRIVATE_UNINSTALL_H="uninstall.sh"
 echo "include $GIT_PRIVATE_UNINSTALL_H"
 
 # 获取当前脚本的相对路径文件名称
-CURRENT_FILE="${BASH_SOURCE-$0}"
+GIT_PRIVATE_UNINSTALL_FILE="${BASH_SOURCE-$0}"
 # 获取当前脚本的相对路径
-CURRENT_FILE_REF_DIR=`dirname ${CURRENT_FILE}`
+GIT_PRIVATE_UNINSTALL_FILE_REF_DIR=`dirname ${GIT_PRIVATE_UNINSTALL_FILE}`
 # 获取当前脚本的绝对路径
-CURRENT_FILE_ABS_DIR=`cd ${CURRENT_FILE_REF_DIR}; pwd`
+GIT_PRIVATE_UNINSTALL_FILE_ABS_DIR=`cd ${GIT_PRIVATE_UNINSTALL_FILE_REF_DIR}; pwd`
 # 获取当前脚本的名称
-CURRENT_FILE_BASE_NAME=`basename ${CURRENT_FILE}`
+GIT_PRIVATE_UNINSTALL_FILE_BASE_NAME=`basename ${GIT_PRIVATE_UNINSTALL_FILE}`
 # 备份当前路径
-STACK_ABS_DIR=`pwd`
+GIT_PRIVATE_UNINSTALL_STACK_ABS_DIR=`pwd`
 # 路径隔离
-cd "${CURRENT_FILE_REF_DIR}"
+cd "${GIT_PRIVATE_UNINSTALL_FILE_REF_DIR}"
 function safe_exit()
 {
-    cd "${STACK_ABS_DIR}"
+    cd "${GIT_PRIVATE_UNINSTALL_STACK_ABS_DIR}"
     safe_exit $1
 }
 
@@ -40,7 +40,7 @@ if [ $ret -ne 0 ]; then
 fi
 
 if [[ "$(pwd)"x == "/"x ]]; then
-	log_error "${LINENO}:  current dir is /, no parent dir.EXIT"
+	log_error "${LINENO}:  GIT_PRIVATE_UNINSTALL dir is /, no parent dir.EXIT"
 	safe_exit 1
 fi
 

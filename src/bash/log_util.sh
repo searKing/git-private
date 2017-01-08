@@ -7,17 +7,17 @@ export LOG_UTIL_H="log_util.sh"
 echo "include $LOG_UTIL_H"
 
 # 获取当前脚本的相对路径文件名称
-CURRENT_FILE="${BASH_SOURCE-$0}"
+LOG_UTIL_FILE="${BASH_SOURCE-$0}"
 # 获取当前脚本的相对路径
-CURRENT_FILE_REF_DIR=`dirname ${CURRENT_FILE}`
+LOG_UTIL_FILE_REF_DIR=`dirname ${LOG_UTIL_FILE}`
 # 获取当前脚本的绝对路径
-CURRENT_FILE_ABS_DIR=`cd ${CURRENT_FILE_REF_DIR}; pwd`
+LOG_UTIL_FILE_ABS_DIR=`cd ${LOG_UTIL_FILE_REF_DIR}; pwd`
 # 获取当前脚本的名称
-CURRENT_FILE_BASE_NAME=`basename ${CURRENT_FILE}`
+LOG_UTIL_FILE_BASE_NAME=`basename ${LOG_UTIL_FILE}`
 # 备份当前路径
-STACK_ABS_DIR=`pwd`
+LOG_UTIL_STACK_ABS_DIR=`pwd`
 # 路径隔离
-cd "${CURRENT_FILE_REF_DIR}"
+cd "${LOG_UTIL_FILE_REF_DIR}"
 # function safe_exit()
 # {
 #     cd "${STACK_ABS_DIR}"
@@ -74,4 +74,4 @@ function log_warn()
         log "$1" "WARN"
 }
 
-cd "${STACK_ABS_DIR}"
+cd "${LOG_UTIL_STACK_ABS_DIR}"
