@@ -62,7 +62,7 @@ prj_name=$(cd ../;pwd)
 prj_name=${prj_name##*/}
 log_info "${LINENO}:  private prj: ${prj_name} is found. EXIT"
 
-log_info "${LINENO}: backuping..."
+log_info "${LINENO}: backuping&copying hooks..."
 for file in $(ls ./hooks/)
 do
 	if [[ -f "../.git/hooks/$file" ]]; then
@@ -70,6 +70,9 @@ do
 	fi
 	cp -Rvf "./hooks/${file}" "../.git/hooks/${file}"
 done
+log_info "${LINENO}: copying hooks's shell scripts..."
+cp -Rvf ./src/bash/* ../.git/hooks/
+
 log_info "$0 $@ running success"
 # read -n1 -p "Press any key to continue..."
 safe_exit 0 
