@@ -1,4 +1,5 @@
-if [ "$STRING_UTIL_H" ]; then
+#!/bin/bash
+if [ ! -z "$STRING_UTIL_H" ]; then
     return
 fi
 

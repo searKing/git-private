@@ -1,5 +1,5 @@
 #!/bin/bash
-if [ "$GIT_PRIVATE_UNINSTALL_H" ]; then
+if [ ! -z "$GIT_PRIVATE_UNINSTALL_H" ]; then
         return
 fi
 
@@ -24,6 +24,7 @@ function safe_exit()
     safe_exit $1
 }
 
+GIT_PRIVATE_INSTALL_H=""
 . ./src/bash/log_util.sh
 ret=$?
 if [ $ret -ne 0 ]; then

@@ -1,5 +1,5 @@
 #!/bin/bash
-if [ "$GIT_SSL_H" ]; then
+if [ ! -z "$GIT_SSL_H" ]; then
         return
 fi
 

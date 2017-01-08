@@ -1,5 +1,5 @@
 #!/bin/bash
-if [ "$LOG_UTIL_H" ]; then
+if [ ! -z "$LOG_UTIL_H" ]; then
         return
 fi
 
