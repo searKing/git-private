@@ -62,13 +62,13 @@ prj_name=$(cd ../;pwd)
 prj_name=${prj_name##*/}
 log_info "${LINENO}:  private prj: ${prj_name} is found. EXIT"
 
+log_info "${LINENO}: backuping..."
 for file in $(ls ./hooks/)
 do
 	if [[ -f "../.git/hooks/$file" ]]; then
 		cp "../.git/hooks/$file" "../.git/hooks/${file}.bak" -Rvf
-		ln -s -f "$file" "../.git/hooks/${file}"
-		echo ""
 	fi
+	ln -s -f "$file" "../.git/hooks/${file}"
 done
 log_info "$0 $@ running success"
 # read -n1 -p "Press any key to continue..."
