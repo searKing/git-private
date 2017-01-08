@@ -1,0 +1,72 @@
+#!/bin/sh
+echo “post-commit $@”
+commit_msg=$(cat .git/COMMIT_EDITMSG)
+pwd
+cd ../
+if [ ! -d "KeyRoot" ]; then
+    ./git_ssl.sh create_key_pairs - - -
+    ret=$?
+    if [ $ret -ne 0 ]; then
+        log_error "${LINENO}:  failed : $ret.EXIT"
+        git reset --hard
+        exit 1
+    fi
+
+    git add keyRoot/git.public.pem
+    ret=$?
+    if [ $ret -ne 0 ]; then
+        log_error "${LINENO}:  failed : $ret.EXIT"
+        git reset --hard
+        exit 1
+    fi
+    
+    git commit -m "[ADD]增加公钥"
+    ret=$?
+    if [ $ret -ne 0 ]; then
+        log_error "${LINENO}:  failed : $ret.EXIT"
+        git reset --hard
+        exit 1
+    fi
+    
+    git push origin master
+    ret=$?
+    if [ $ret -ne 0 ]; then
+        log_error "${LINENO}:  failed : $ret.EXIT"
+        git reset --hard
+        exit 1
+    fi
+    
+fi
+./git_ssl.sh git_add_changes -
+ret=$?
+if [ $ret -ne 0 ]; then
+    log_error "${LINENO}:  failed : $ret.EXIT"
+    git reset --hard
+    exit 1
+fi 
+
+./git_ssl.sh compress_and_encrypt - - -
+ret=$?
+if [ $ret -ne 0 ]; then
+    log_error "${LINENO}:  failed : $ret.EXIT"
+    git reset --hard
+    exit 1
+fi 
+
+git add -u
+ret=$?
+if [ $ret -ne 0 ]; then
+    log_error "${LINENO}:  failed : $ret.EXIT"
+    git reset --hard
+    exit 1
+fi 
+
+git commit -m "$commit_msg"
+ret=$?
+if [ $ret -ne 0 ]; then
+    log_error "${LINENO}:  failed : $ret.EXIT"
+    git reset --hard
+    exit 1
+fi 
+
+exit 0
