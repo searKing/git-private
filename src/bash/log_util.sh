@@ -24,6 +24,7 @@ cd "${LOG_UTIL_FILE_REF_DIR}"
 #     exit $1
 # }
 echo "include ${LOG_UTIL_FILE_ABS_DIR}/${LOG_UTIL_H}"
+echo "check pwd=$(pwd)"
 . string_util.sh
 
 # @param_in message
