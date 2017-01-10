@@ -3,6 +3,7 @@ echo “post-commit $@”
 commit_msg=$(cat .git/COMMIT_EDITMSG)
 pwd
 . ./.git/hooks/log_util.sh
+
 if [ ! -d "KeyRoot" ]; then
     ./.git/hooks/git_ssl.sh create_key_pairs - - -
     ret=$?
@@ -13,6 +14,7 @@ if [ ! -d "KeyRoot" ]; then
     fi
     
 fi
+
 ./.git/hooks/git_ssl.sh git_add_changes "../../"
 ret=$?
 if [ $ret -ne 0 ]; then
