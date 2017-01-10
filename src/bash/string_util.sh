@@ -4,7 +4,7 @@ if [ ! -z "$STRING_UTIL_H" ]; then
 fi
 
 export STRING_UTIL_H="string_util.sh"
-echo "include $STRING_UTIL_H"
+# echo "include $STRING_UTIL_H"
 
 # 获取当前脚本的相对路径文件名称
 STRING_UTIL_FILE="${BASH_SOURCE-$0}"
@@ -23,7 +23,7 @@ cd "${STRING_UTIL_FILE_REF_DIR}"
 #     cd "${STACK_ABS_DIR}"
 #     exit $1
 # }
-
+echo "include ${STRING_UTIL_FILE_ABS_DIR}/${STRING_UTIL_H}"
 
 . log_util.sh
 

@@ -4,7 +4,7 @@ if [ ! -z "$GIT_SSL_H" ]; then
 fi
 
 export GIT_SSL_H="git_ssl.sh"
-echo "include $GIT_SSL_H"
+# echo "include $GIT_SSL_H"
 
 # 获取当前脚本的相对路径文件名称
 GIT_SSL_FILE="${BASH_SOURCE-$0}"
@@ -18,6 +18,7 @@ GIT_SSL_FILE_BASE_NAME=`basename ${GIT_SSL_FILE}`
 GIT_SSL_STACK_ABS_DIR=`pwd`
 # 路径隔离
 cd "${GIT_SSL_FILE_REF_DIR}"
+echo "include ${GIT_SSL_FILE_ABS_DIR}/${GIT_SSL_H}"
 function safe_exit()
 {
     cd "${GIT_SSL_STACK_ABS_DIR}"
