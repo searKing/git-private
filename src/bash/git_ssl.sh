@@ -7,7 +7,7 @@ export GIT_SSL_H="git_ssl.sh"
 # echo "include $GIT_SSL_H"
 
 # 获取当前脚本的相对路径文件名称
-GIT_SSL_FILE="${BASH_SOURCE-$0}"
+GIT_SSL_FILE="${BASH_SOURCE[0]-$0}"
 # 获取当前脚本的相对路径
 GIT_SSL_FILE_REF_DIR=`dirname ${GIT_SSL_FILE}`
 # 获取当前脚本的绝对路径
@@ -25,7 +25,7 @@ function safe_exit()
     exit $1
 }
 
-. log_util.sh
+. ./log_util.sh
 #使用方法说明
 function usage() {
 	cat<<USAGEEOF	

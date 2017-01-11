@@ -1,4 +1,5 @@
 #!/bin/bash
+# set -x
 if [ ! -z "$LOG_UTIL_H" ]; then
         return
 fi
@@ -7,7 +8,7 @@ export LOG_UTIL_H="log_util.sh"
 # echo "include $LOG_UTIL_H"
 
 # 获取当前脚本的相对路径文件名称
-LOG_UTIL_FILE="${BASH_SOURCE-$0}"
+LOG_UTIL_FILE="${BASH_SOURCE[0]-$0}"
 # 获取当前脚本的相对路径
 LOG_UTIL_FILE_REF_DIR=`dirname ${LOG_UTIL_FILE}`
 # 获取当前脚本的绝对路径
@@ -17,15 +18,14 @@ LOG_UTIL_FILE_BASE_NAME=`basename ${LOG_UTIL_FILE}`
 # 备份当前路径
 LOG_UTIL_STACK_ABS_DIR=`pwd`
 # 路径隔离
-cd "${LOG_UTIL_FILE_REF_DIR}"
+cd "${LOG_UTIL_FILE_ABS_DIR}"
 # function safe_exit()
 # {
 #     cd "${STACK_ABS_DIR}"
 #     exit $1
 # }
 echo "include ${LOG_UTIL_FILE_ABS_DIR}/${LOG_UTIL_H}"
-echo "check pwd=$(pwd)"
-. string_util.sh
+. ./string_util.sh
 
 # @param_in message
 # @param_in loglevel

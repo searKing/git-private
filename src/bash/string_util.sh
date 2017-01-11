@@ -1,4 +1,5 @@
 #!/bin/bash
+# set -x
 if [ ! -z "$STRING_UTIL_H" ]; then
     return
 fi
@@ -7,7 +8,7 @@ export STRING_UTIL_H="string_util.sh"
 # echo "include $STRING_UTIL_H"
 
 # 获取当前脚本的相对路径文件名称
-STRING_UTIL_FILE="${BASH_SOURCE-$0}"
+STRING_UTIL_FILE="${BASH_SOURCE[0]-$0}"
 # 获取当前脚本的相对路径
 STRING_UTIL_FILE_REF_DIR=`dirname ${STRING_UTIL_FILE}`
 # 获取当前脚本的绝对路径
@@ -17,7 +18,7 @@ STRING_UTIL_FILE_BASE_NAME=`basename ${STRING_UTIL_FILE}`
 # 备份当前路径
 STRING_UTIL_STACK_ABS_DIR=`pwd`
 # 路径隔离
-cd "${STRING_UTIL_FILE_REF_DIR}"
+cd "${STRING_UTIL_FILE_ABS_DIR}"
 # function safe_exit()
 # {
 #     cd "${STACK_ABS_DIR}"
@@ -25,7 +26,7 @@ cd "${STRING_UTIL_FILE_REF_DIR}"
 # }
 echo "include ${STRING_UTIL_FILE_ABS_DIR}/${STRING_UTIL_H}"
 
-. log_util.sh
+. ./log_util.sh
 
 # trim(str)
 # remove blank space in both side

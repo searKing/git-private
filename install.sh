@@ -73,6 +73,43 @@ done
 log_info "${LINENO}: copying hooks's shell scripts..."
 cp -Rvf ./src/bash/* ../.git/hooks/
 
+private_prj_name=".${prj_name}.private"
+log_info "${LINENO}: initing private prj: ${private_prj_name} ..."
+
+if [ -d "../${private_prj_name}" ]; then
+	rm -Rf "../${private_prj_name}"
+fi
+if [ -d "../${private_prj_name}.git" ]; then
+	rm -Rf "../${private_prj_name}.git"
+fi
+# 读取配置文件
+if [ -f "config.ini" ]; then
+	. ./config.ini
+	if [ "${remote_private_url}"x == ""x ]; then
+		cd ../; 
+		git clone "${remote_private_url}" "../${private_prj_name}";
+		ret=$?
+		cd -
+		if [ $ret -ne 0 ]; then
+			log_error "${LINENO}:  git clone "${remote_private_url}" failed : $ret.EXIT"
+			safe_exit 1
+		fi
+	fi
+fi
+
+# 若没有创建私有工程，则本地创建一个
+if [ ! -d "../${private_prj_name}" ]; then
+	# 创建bare加密库
+	mkdir -p "../${private_prj_name}.git"
+	cd "../${private_prj_name}.git"
+	git init --bare
+	cd -
+	# 克隆加密库
+	cd ../
+	git clone "${private_prj_name}.git"
+	cd -
+fi
+
 log_info "$0 $@ running success"
 # read -n1 -p "Press any key to continue..."
 safe_exit 0 

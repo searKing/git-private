@@ -81,6 +81,17 @@ do
 done
 log_info "${LINENO}: copying hooks's shell scripts..."
 cp -Rvf ./src/bash/* ../.git/hooks/
+
+private_prj_name=".${prj_name}.private"
+log_info "${LINENO}: initing private prj: ${private_prj_name} ..."
+
+if [ -d "../${private_prj_name}" ]; then
+	rm -Rvf "../${private_prj_name}"
+fi
+if [ -d "../${private_prj_name}.git" ]; then
+	rm -Rvf "../${private_prj_name}.git"
+fi
+
 log_info "$0 $@ running success"
 # read -n1 -p "Press any key to continue..."
 safe_exit 0 
