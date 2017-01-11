@@ -301,92 +301,38 @@ function git_add_changes()
 	fi
     log_info "${LINENO}:ergodic ${base_dir} to git add every file."
 	
+	# 检测当前原始目录是否是git 版本控制
 	if [ ! -d  "${base_dir}/.git" ]; then
         log_error "${LINENO}: ${base_dir}/.git/ is not exist. EXIT"
         safe_exit 1
 	fi
 	
 	# ergodic to find changed original files
-    for file in `git ls-files`  
-    do  
-		echo "file="$file
-		if [ "$file"x == ""x ]; then
-			continue
-		fi
-		if [ "$file"x == "."x ]; then
-			continue
-		fi
-		if [ "$file"x == ".."x ]; then
-			continue
-		fi
-		if [ "$file"x == ".git"x ]; then
-			continue
-		fi
-		
-        if [ -d "${base_dir}"/"${file}"/".git" ]; then
-            echo ${file}
-            local iter_src_dir="${base_dir}/${file}/.git"  
-            local iter_dst_dir="${base_dir}/${file}.pri"  
-            log_info "${LINENO}:git add ${iter_src_dir} ."
-            if [ -d "${iter_dst_dir}" ]; then
-                rm -Rvf "${iter_dst_dir}"
-            fi
-            mkdir -p "${iter_dst_dir}"
-            pwd
-            cp "${iter_src_dir}/"  "${iter_dst_dir}/.git.prj/" -Rvf
-
-            git add "${iter_dst_dir}/.git.prj/*" -f
-            # 将本地未加密的git仓库压缩打包到临时操作目录中去
-            ret=$?
-            if [ $ret -ne 0 ]; then
-                log_error "${LINENO}: git add "${iter_dst_dir}/*" -f failed : $ret.EXIT"
-				cd "${base_dir}"; git reset --hard; cd -
-                safe_exit 1
-            fi
-
-        fi  
-    done
+	# 遍历当前工程，将已受控目录备份至加密文件夹，git add预处理
 	
+	prj_name=$(cd ${base_dir}; basename $(pwd))
+	private_prj_name=".${prj_name}.private"
+	log_info "${LINENO}: scaning ${prj_name} to update ${private_prj_name} ..."
+	local iter_src_dir="${base_dir}/.git"  
+    local iter_dst_dir="${base_dir}/${private_prj_name}/.git.private"
+	echo "iter_src_dir=${iter_src_dir}"
+	echo "iter_dst_dir=${iter_dst_dir}"
+    if [ -d "${iter_dst_dir}" ]; then
+        rm -Rvf "${iter_dst_dir}"
+    fi 
+    mkdir -p "${iter_dst_dir}"
+	# *不能拷贝隐藏文件，所以需要用.
+    cp "${iter_src_dir}/."  "${iter_dst_dir}/" -Rvf
+	git add "${iter_dst_dir}/.git.prj/*" -f
+    # 将本地未加密的git仓库压缩打包到临时操作目录中去
+	ret=$?
+	if [ $ret -ne 0 ]; then
+		log_error "${LINENO}: git add "${iter_dst_dir}/*" -f failed : $ret.EXIT"
+		cd "${base_dir}"; git reset --hard; cd -
+		safe_exit 1
+	fi
+	safe_exit 0
 	
-    for file in `ls -a $base_dir`  
-    do  
-		echo "file=$file"
-		if [ "$file"x == ""x ]; then
-			continue
-		fi
-		if [ "$file"x == "."x ]; then
-			continue
-		fi
-		if [ "$file"x == ".."x ]; then
-			continue
-		fi
-		if [ "${file##*.}"x == "pri"x ]; then
-			continue
-		fi
-		# if [ "${file}"x == ".git"x && -d "${base_dir}/.git"]; then
-        if [ -d "${base_dir}"/"${file}"/".git" ]; then
-            echo ${file}
-            local iter_src_dir="${base_dir}/${file}/.git"  
-            local iter_dst_dir="${base_dir}/${file}.pri"  
-            log_info "${LINENO}:git add ${iter_src_dir} ."
-            if [ -d "${iter_dst_dir}" ]; then
-                rm -Rvf "${iter_dst_dir}"
-            fi
-            mkdir -p "${iter_dst_dir}"
-            pwd
-            cp "${iter_src_dir}/"  "${iter_dst_dir}/.git.prj/" -Rvf
-
-            git add "${iter_dst_dir}/.git.prj/*" -f
-            # 将本地未加密的git仓库压缩打包到临时操作目录中去
-            ret=$?
-            if [ $ret -ne 0 ]; then
-                log_error "${LINENO}: git add "${iter_dst_dir}/*" -f failed : $ret.EXIT"
-				cd "${base_dir}"; git reset --hard; cd -
-                safe_exit 1
-            fi
-
-        fi  
-    done
 }
 
 ################################################################################
