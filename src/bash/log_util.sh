@@ -1,7 +1,7 @@
 #!/bin/bash
 # set -x
 if [ ! -z "$LOG_UTIL_H" ]; then
-        return
+    return
 fi
 
 export LOG_UTIL_H="log_util.sh"
@@ -44,7 +44,7 @@ function log()
     fi
 
     if [[ -z "$basedir" || ""x == "$basedir"x ]]; then
-        basedir="${LOG_UTIL_FILE_ABS_DIR}"
+        basedir="."
     fi
 
     local outdir="$basedir/log"
@@ -54,25 +54,30 @@ function log()
     local log_file_name=`get_short_name $log_file_name`
     echo "$datetime [$0] $loglevel :: $message" | tee -a "$outdir/$log_file_name.log"
 }
+export -f log
 
 function log_error()
 {
         log "$1" "ERROR"
 }
+export -f log_error
 
 function log_info()
 {
         log "$1" "INFO"
 }
+export -f log_info
 
 function log_debug()
 {
         log "$1" "DEGUG"
 }
+export -f log_debug
 
 function log_warn()
 {
         log "$1" "WARN"
 }
+export -f log_warn
 
 cd "${LOG_UTIL_STACK_ABS_DIR}"

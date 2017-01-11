@@ -153,7 +153,7 @@ function create_key_pairs() {
 		log_error "${LINENO}:openssl smime req failed : $ret"
 		return 1
 	fi 
-    log_info "${LINENO}:Pem files created. Please backup your key pairs under $key_root_dir."
+    log_info "${LINENO}:Pem files created. Please backup your key pairs under $(pwd)/$key_root_dir."
 }
 
 function compress_and_encrypt()
@@ -284,7 +284,10 @@ function decrypt_and_decompress()
 
 	done
 }
-
+# 未加密
+#	hooks
+# 	加密
+# git add 未加密的.git
 function git_add_changes()
 {
 	expected_params_in_num=1
@@ -296,11 +299,17 @@ function git_add_changes()
 	if [[ "$base_dir"x == "-"x ]]; then
 		base_dir="."
 	fi
-    local base_dir=.
     log_info "${LINENO}:ergodic ${base_dir} to git add every file."
-	git reset --hard
-    for file in `ls`  
+	
+	if [ ! -d  "${base_dir}/.git" ]; then
+        log_error "${LINENO}: ${base_dir}/.git/ is not exist. EXIT"
+        safe_exit 1
+	fi
+	
+	# ergodic to find changed original files
+    for file in `git ls-files`  
     do  
+		echo "file="$file
 		if [ "$file"x == ""x ]; then
 			continue
 		fi
@@ -310,9 +319,10 @@ function git_add_changes()
 		if [ "$file"x == ".."x ]; then
 			continue
 		fi
-		if [ "${file##*.}"x == "pri"x ]; then
+		if [ "$file"x == ".git"x ]; then
 			continue
 		fi
+		
         if [ -d "${base_dir}"/"${file}"/".git" ]; then
             echo ${file}
             local iter_src_dir="${base_dir}/${file}/.git"  
@@ -330,7 +340,48 @@ function git_add_changes()
             ret=$?
             if [ $ret -ne 0 ]; then
                 log_error "${LINENO}: git add "${iter_dst_dir}/*" -f failed : $ret.EXIT"
-                git reset --hard
+				cd "${base_dir}"; git reset --hard; cd -
+                safe_exit 1
+            fi
+
+        fi  
+    done
+	
+	
+    for file in `ls -a $base_dir`  
+    do  
+		echo "file=$file"
+		if [ "$file"x == ""x ]; then
+			continue
+		fi
+		if [ "$file"x == "."x ]; then
+			continue
+		fi
+		if [ "$file"x == ".."x ]; then
+			continue
+		fi
+		if [ "${file##*.}"x == "pri"x ]; then
+			continue
+		fi
+		# if [ "${file}"x == ".git"x && -d "${base_dir}/.git"]; then
+        if [ -d "${base_dir}"/"${file}"/".git" ]; then
+            echo ${file}
+            local iter_src_dir="${base_dir}/${file}/.git"  
+            local iter_dst_dir="${base_dir}/${file}.pri"  
+            log_info "${LINENO}:git add ${iter_src_dir} ."
+            if [ -d "${iter_dst_dir}" ]; then
+                rm -Rvf "${iter_dst_dir}"
+            fi
+            mkdir -p "${iter_dst_dir}"
+            pwd
+            cp "${iter_src_dir}/"  "${iter_dst_dir}/.git.prj/" -Rvf
+
+            git add "${iter_dst_dir}/.git.prj/*" -f
+            # 将本地未加密的git仓库压缩打包到临时操作目录中去
+            ret=$?
+            if [ $ret -ne 0 ]; then
+                log_error "${LINENO}: git add "${iter_dst_dir}/*" -f failed : $ret.EXIT"
+				cd "${base_dir}"; git reset --hard; cd -
                 safe_exit 1
             fi
 

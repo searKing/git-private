@@ -1,10 +1,12 @@
-#!/bin/sh
+#!/bin/bash
+set -x
 echo “post-commit $@”
 commit_msg=$(cat .git/COMMIT_EDITMSG)
 pwd
 . ./.git/hooks/log_util.sh
 
-if [ ! -d "KeyRoot" ]; then
+# 生成密钥
+if [ ! -d "./.git/hooks/keyRoot" ]; then
     ./.git/hooks/git_ssl.sh create_key_pairs - - -
     ret=$?
     if [ $ret -ne 0 ]; then
@@ -15,7 +17,8 @@ if [ ! -d "KeyRoot" ]; then
     
 fi
 
-./.git/hooks/git_ssl.sh git_add_changes "../../"
+# 添加
+./.git/hooks/git_ssl.sh git_add_changes `cd .; pwd`
 ret=$?
 if [ $ret -ne 0 ]; then
     log_error "${LINENO}:  failed : $ret.EXIT"
@@ -23,7 +26,7 @@ if [ $ret -ne 0 ]; then
     exit 1
 fi 
 
-./.git/hooks/git_ssl.sh compress_and_encrypt "../../" - -
+./.git/hooks/git_ssl.sh compress_and_encrypt `cd .; pwd` - -
 ret=$?
 if [ $ret -ne 0 ]; then
     log_error "${LINENO}:  failed : $ret.EXIT"
@@ -38,7 +41,6 @@ if [ $ret -ne 0 ]; then
     git reset --hard
     exit 1
 fi 
-
 git commit -m "$commit_msg"
 ret=$?
 if [ $ret -ne 0 ]; then

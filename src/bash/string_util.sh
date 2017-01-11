@@ -34,6 +34,7 @@ trim()
 {
     echo $*
 }
+export -f trim
 
 # remove the suffix and get short name
 # @param in filename
@@ -49,5 +50,6 @@ get_short_name()
     local file_name=$(basename "$full_file_name") 
     echo "$file_name" | sed 's/\.\w*$//'
 }
+export -f get_short_name
 
 cd "${STRING_UTIL_STACK_ABS_DIR}"
