@@ -323,11 +323,13 @@ function git_add_changes()
     mkdir -p "${iter_dst_dir}"
 	# *不能拷贝隐藏文件，所以需要用.
     cp "${iter_src_dir}/."  "${iter_dst_dir}/" -Rvf
-	git add "${iter_dst_dir}/.git.prj/*" -f
+	cd "${iter_dst_dir}/../"
+	git add "./." -f
     # 将本地未加密的git仓库压缩打包到临时操作目录中去
 	ret=$?
+	cd -
 	if [ $ret -ne 0 ]; then
-		log_error "${LINENO}: git add "${iter_dst_dir}/*" -f failed : $ret.EXIT"
+		log_error "${LINENO}: git add "${iter_dst_dir}/." -f failed : $ret.EXIT"
 		cd "${base_dir}"; git reset --hard; cd -
 		safe_exit 1
 	fi
