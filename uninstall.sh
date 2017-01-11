@@ -83,7 +83,7 @@ log_info "${LINENO}: copying hooks's shell scripts..."
 cp -Rvf ./src/bash/* ../.git/hooks/
 
 private_prj_name=".${prj_name}.private"
-log_info "${LINENO}: initing private prj: ${private_prj_name} ..."
+log_info "${LINENO}: removing private prj: ${private_prj_name} ..."
 
 if [ -d "../${private_prj_name}" ]; then
 	rm -Rvf "../${private_prj_name}"
