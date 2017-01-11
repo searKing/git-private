@@ -170,30 +170,34 @@ function compress_and_encrypt()
 		base_dir="."
 	fi
 	if [[ "$key_root_dir"x == "-"x ]]; then
-		key_root_dir=${g_key_root_dir}
+		key_root_dir="${base_dir}/.git/hooks/${g_key_root_dir}"
 	fi
 	if [[ "$public_key_name"x == "-"x ]]; then
-		public_key_name=${g_git_public_key_name}
+		public_key_name="${g_git_public_key_name}"
 	fi
 	log_info "${LINENO}:ergodic ${base_dir} to compress and encrypt every file."
 
-    for file_prj in `ls`  
-    do  
-		if [ "${file_prj##*.}"x != "pri"x ]; then
-			continue
-		fi
-		for file in ` git ls-files "$file_prj"`  
-		do  
-			if [ -f "${base_dir}"/"${file}" ]; then
-				local iter_file="${base_dir}/${file}"  
+	local prj_name=$(cd ${base_dir}; basename $(pwd))
+	local private_prj_name=".${prj_name}.private"
+	log_info "${LINENO}: scaning ${private_prj_name} to compress and encrypt every file ..."
+	local iter_src_dir="${base_dir}/.git"  
+    local iter_dst_dir="${base_dir}/${private_prj_name}/.git.private"
+	# 切换到加密根目录
+	cd "${iter_dst_dir}/../"
+	for file in `git ls-files`
+	do
+		local iter_file="${iter_dst_dir}/../${file}"  
+		echo "iter_file=$iter_file"
+		# 源文件只是change，不是rm，所以需要压缩加密
+		# 对于目录，显然不需要加密
+		if [[ -f "$iter_file" ]]; then
 				log_info "${LINENO}:compress ${iter_file}."
 				#将本地未加密的git仓库压缩打包到临时操作目录中去
-				cd ${base_dir}
-				tar -czf "${file}.tar.gz" "${file}"
+				tar -czf "${iter_file}.tar.gz" "${iter_file}"
 				ret=$?
-				cd - > /dev/null
 				if [ $ret -ne 0 ]; then
 					log_error "${LINENO}:tar "${iter_file}" : $ret"
+					cd -
 					return 1
 				fi 
 				log_info "${LINENO}:encrypt ${iter_file}."
@@ -211,12 +215,15 @@ function compress_and_encrypt()
 				rm "${iter_file}.tar.gz" -Rf
 				if [ $ret -ne 0 ]; then
 					log_error "${LINENO}: openssl smimee -encrypt failed : $ret.EXIT"
+					cd -
 					return 1
 				fi
 
-			fi  
-		done
+		fi
+		
 	done
+	cd -
+
 }
 
 function decrypt_and_decompress()
@@ -315,8 +322,6 @@ function git_add_changes()
 	log_info "${LINENO}: scaning ${prj_name} to update ${private_prj_name} ..."
 	local iter_src_dir="${base_dir}/.git"  
     local iter_dst_dir="${base_dir}/${private_prj_name}/.git.private"
-	echo "iter_src_dir=${iter_src_dir}"
-	echo "iter_dst_dir=${iter_dst_dir}"
     if [ -d "${iter_dst_dir}" ]; then
         rm -Rvf "${iter_dst_dir}"
     fi 
