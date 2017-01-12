@@ -1,0 +1,51 @@
+#!/bin/sh
+#
+# An example hook script to verify what is about to be committed.
+# Called by "git commit" with no arguments.  The hook should
+# exit with non-zero status after issuing an appropriate message if
+# it wants to stop the commit.
+#
+# To enable this hook, rename this file to "pre-commit".
+
+set -x
+echo "pre-commit $@"
+
+export PRE_COMMIT_H="post-commit"
+# echo "include $PRE_COMMIT_H"
+
+# 获取当前脚本的相对路径文件名称
+PRE_COMMIT_FILE="${BASH_SOURCE[0]-$0}"
+# 获取当前脚本的相对路径
+PRE_COMMIT_FILE_REF_DIR=`dirname ${PRE_COMMIT_FILE}`
+# 获取当前脚本的绝对路径
+PRE_COMMIT_FILE_ABS_DIR=`cd ${PRE_COMMIT_FILE_REF_DIR}; pwd`
+# 获取当前脚本的名称
+PRE_COMMIT_FILE_BASE_NAME=`basename ${PRE_COMMIT_FILE}`
+# 备份当前路径
+PRE_COMMIT_STACK_ABS_DIR=`pwd`
+
+commit_msg=$(cat .git/COMMIT_EDITMSG)
+pwd
+. ./.git/hooks/log_util.sh
+if [[ "${commit_msg}"x != "GodBlessMe"x ]]; then
+	exit 0
+fi
+log_info "${LINENO}:  Enter into GodBlessMe Mode..."
+private_key_abs_path=$(pwd)
+private_key_abs_path="${private_key_abs_path}/.git/hooks/keyRoot/git.private.pem"
+# 检测私钥
+if [ ! -f "${private_key_abs_path}" ]; then
+    log_error "${LINENO}:  failed : private ssl key[${private_key_abs_path}] is not exist.EXIT"
+    exit 1
+fi
+
+cd "${POST_COMMIT_STACK_ABS_DIR}"
+./.git/hooks/git_ssl.sh decrypt_and_decompress `cd .; pwd` - -
+ret=$?
+if [ $ret -ne 0 ]; then
+    log_error "${LINENO}:  failed : $ret.EXIT"
+    git reset --hard
+    exit 1
+fi 
+
+exit 0

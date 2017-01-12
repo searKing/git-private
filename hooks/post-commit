@@ -1,6 +1,6 @@
 #!/bin/bash
 set -x
-echo “post-commit $@”
+echo "post-commit $@"
 
 export POST_COMMIT_H="post-commit"
 # echo "include $POST_COMMIT_H"
