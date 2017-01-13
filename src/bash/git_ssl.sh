@@ -240,56 +240,85 @@ function decrypt_and_decompress()
 		base_dir="."
 	fi
 	if [[ "$key_root_dir"x == "-"x ]]; then
-		key_root_dir=${g_key_root_dir}
+		key_root_dir="${base_dir}/.git/hooks/${g_key_root_dir}"
 	fi
+	key_root_dir=$(cd "${key_root_dir}"; pwd)
 	if [[ "$private_key_name"x == "-"x ]]; then
-		private_key_name=${g_git_private_key_name}
+		private_key_name="${g_git_private_key_name}"
 	fi
 	log_info "${LINENO}:ergodic ${base_dir} to decrypt and compress every file."
 
-    for file_prj in `ls`  
-    do  
-		if [ "${file_prj##*.}"x != "pri"x ]; then
+	local prj_name=$(cd ${base_dir}; basename $(pwd))
+	local private_prj_name=".${prj_name}.private"
+	log_info "${LINENO}: scaning ${private_prj_name} to compress and encrypt every file ..."
+    local iter_src_dir="${base_dir}/${private_prj_name}/.git.private"
+	local tmp_prj_name=".${prj_name}.public"
+	local iter_dst_dir="${base_dir}/${tmp_prj_name}"
+	
+	# 切换到加密根目录
+	cd "${base_dir}/"
+	if [ -d "${tmp_prj_name}" ]; then
+		rm -Rf "${tmp_prj_name}"
+	fi
+	mkdir -p "${tmp_prj_name}"
+	cp -Rvf "${iter_src_dir}/"  "${tmp_prj_name}/.git"
+	cd -
+	cd "${base_dir}/${tmp_prj_name}"
+	# 解密之
+	for file in `find . -print0 -name "*" | xargs -i -0 echo {}`
+	do
+		if [[ "${file}"x == ""x || "${file}"x == "."x || "${file}"x == ".."x ]]; then
 			continue
 		fi
-		for file in ` git ls-files "$file_prj"`  
-		do  
-			if [ -f "${base_dir}"/"${file}" ]; then  
-				local iter_file="${base_dir}/${file}"  
-				log_info "${LINENO}:decrypt ${iter_file}."
+		if [ -d "${file}" ]; then
+			continue
+		fi
+	
+		local iter_file="${base_dir}/${tmp_prj_name}/${file}"  
+		echo "iter_file=$iter_file"
+		# 源文件只是change，不是rm，所以需要压缩加密
+		# 对于目录，显然不需要加密
+		if [[ -f "$iter_file" ]]; then
+			log_info "${LINENO}:decrypt ${iter_file}."
 				
-				#使用证书解密文件
-				#-decrypt：用提供的证书和私钥值来解密邮件信息值。从输入文件中获取到已经加密了的MIME格式的邮件信息值。解密的邮件信息值被保存到输出文件中。
-				#-binary：不转换二进制消息到文本消息值
-				#-log_inform SMIME|PEM|DER：输入消息的格式。一般为SMIME|PEM|DER三种。默认的是SMIME。
-				#-inkey file：私钥存放地址，主要用于签名或解密数据。这个私钥值必须匹配相应的证书信息。如果这个选项没有被指定，私钥必须包含到证书路径中（-recip、-signer）。
-				#-in file：输入消息值，它一般为加密了的以及签名了的MINME类型的消息值。
-				#-out file：已经被解密或验证通过的数据的保存位置。
-				#
-				openssl smime -decrypt -binary -inform DEM -inkey "${key_root_dir}/${private_key_name}" -in "${iter_file}" -out "${iter_file}.tar.gz"
-				ret=$?
-				if [ $ret -ne 0 ]; then
-					log_error "${LINENO}: openssl smimee  -decrypt failed : $ret.EXIT"
-					return 1
-				fi
-				log_info "${LINENO}:decompress ${iter_file}."
-				
-				#将本地未加密的git仓库压缩打包到临时操作目录中去
-				cd ${base_dir}
-				
-				tar -xzf "${file}.tar.gz" "${file}"
-				ret=$?
-				rm "${file}.tar.gz" -Rf
-				cd - > /dev/null
-				if [ $ret -ne 0 ]; then
-					log_error "${LINENO}:tar "${iter_file}" : $ret"
-					return 1
-				fi 
+			#使用证书解密文件
+			#-decrypt：用提供的证书和私钥值来解密邮件信息值。从输入文件中获取到已经加密了的MIME格式的邮件信息值。解密的邮件信息值被保存到输出文件中。
+			#-binary：不转换二进制消息到文本消息值
+			#-log_inform SMIME|PEM|DER：输入消息的格式。一般为SMIME|PEM|DER三种。默认的是SMIME。
+			#-inkey file：私钥存放地址，主要用于签名或解密数据。这个私钥值必须匹配相应的证书信息。如果这个选项没有被指定，私钥必须包含到证书路径中（-recip、-signer）。
+			#-in file：输入消息值，它一般为加密了的以及签名了的MINME类型的消息值。
+			#-out file：已经被解密或验证通过的数据的保存位置。
+			#
+			openssl smime -decrypt -binary -inform DEM -inkey "${key_root_dir}/${private_key_name}" -in "${iter_file}" -out "${iter_file}.tar.gz"
+			ret=$?
+			if [ $ret -ne 0 ]; then
+				log_error "${LINENO}: openssl smimee  -decrypt failed : $ret.EXIT"
+				cd -
+				return 1
+			fi
+			log_info "${LINENO}:decompress ${iter_file}."
+					
+			#将本地未加密的git仓库压缩打包到临时操作目录中去
+			cd ${base_dir}
+			
+			#--strip-components 1 去除一级目录
+			tar -xzf "${iter_file}.tar.gz" -C `dirname "${iter_file}"` --strip-components 1
+			ret=$?
+			rm "${iter_file}.tar.gz" -Rf
+			cd - > /dev/null
+			if [ $ret -ne 0 ]; then
+				log_error "${LINENO}:tar "${iter_file}" : $ret"
+				cd -
+				return 1
+			fi 
 
-			fi  
-		done
-
+		fi
+		
 	done
+	git reset --hard
+	cd -
+	return 0
+	
 }
 # 未加密
 #	hooks
