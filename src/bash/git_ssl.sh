@@ -184,7 +184,7 @@ function compress_and_encrypt()
     local iter_dst_dir="${base_dir}/${private_prj_name}/.git.private"
 	# 切换到加密根目录
 	cd "${iter_dst_dir}/../"
-	for file in `git ls-files`
+	for file in `git diff --cached --name-only`
 	do
 		local iter_file="${iter_dst_dir}/../${file}"  
 		echo "iter_file=$iter_file"
@@ -194,14 +194,14 @@ function compress_and_encrypt()
 				log_info "${LINENO}:compress ${iter_file}."
 				#将本地未加密的git仓库压缩打包到临时操作目录中去
 				tar -czf "${iter_file}.tar.gz" "${iter_file}"
-				ret=$?
+				cd -
 				if [ $ret -ne 0 ]; then
 					log_error "${LINENO}:tar "${iter_file}" : $ret"
 					cd -
 					return 1
-				fi 
+				fi
+
 				log_info "${LINENO}:encrypt ${iter_file}."
-				
 				#使用证书加密文件
 				#-encrypt：用给定的接受者的证书加密邮件信息。输入文件是一个消息值，用于加密。输出文件是一个已经被加密了的MIME格式的邮件信息。
 				#-des, -des3, -seed, -rc2-40, -rc2-64, -rc2-128, -aes128, -aes192, -aes256，-camellia128, -camellia192, -camellia256：指定的私钥保护加密算法。默认的算法是rc2-40。
@@ -246,24 +246,27 @@ function decrypt_and_decompress()
 	if [[ "$private_key_name"x == "-"x ]]; then
 		private_key_name="${g_git_private_key_name}"
 	fi
-	log_info "${LINENO}:ergodic ${base_dir} to decrypt and compress every file."
+	log_info "${LINENO}:ergodic ${base_dir} to decrypt and decompress every file."
 
 	local prj_name=$(cd ${base_dir}; basename $(pwd))
 	local private_prj_name=".${prj_name}.private"
-	log_info "${LINENO}: scaning ${private_prj_name} to compress and encrypt every file ..."
+	log_info "${LINENO}: scaning ${private_prj_name} to decrypt and decompress every file ..."
     local iter_src_dir="${base_dir}/${private_prj_name}/.git.private"
 	local tmp_prj_name=".${prj_name}.public"
 	local iter_dst_dir="${base_dir}/${tmp_prj_name}"
 	
-	# 切换到加密根目录
-	cd "${base_dir}/"
-	if [ -d "${tmp_prj_name}" ]; then
-		rm -Rf "${tmp_prj_name}"
+	if [ -d "${iter_dst_dir}" ]; then
+		rm -Rf "${iter_dst_dir}"
+		ret=$?
+		if [ $ret -ne 0 ]; then
+			log_error "${LINENO}: rm -Rf ${iter_dst_dir} failed : $ret.EXIT"
+			return 1
+		fi	
 	fi
-	mkdir -p "${tmp_prj_name}"
-	cp -Rvf "${iter_src_dir}/"  "${tmp_prj_name}/.git"
-	cd -
-	cd "${base_dir}/${tmp_prj_name}"
+	mkdir -p "${iter_dst_dir}"
+	# 切换到加密根目录
+	cd "${iter_dst_dir}/"
+	cp -Rf "${iter_src_dir}/"  "${iter_dst_dir}/.git"
 	# 解密之
 	for file in `find . -print0 -name "*" | xargs -i -0 echo {}`
 	do
@@ -274,7 +277,7 @@ function decrypt_and_decompress()
 			continue
 		fi
 	
-		local iter_file="${base_dir}/${tmp_prj_name}/${file}"  
+		local iter_file="${iter_dst_dir}/${file}"  
 		echo "iter_file=$iter_file"
 		# 源文件只是change，不是rm，所以需要压缩加密
 		# 对于目录，显然不需要加密
@@ -295,20 +298,20 @@ function decrypt_and_decompress()
 				log_error "${LINENO}: openssl smimee  -decrypt failed : $ret.EXIT"
 				cd -
 				return 1
-			fi
+			fi	
+				
 			log_info "${LINENO}:decompress ${iter_file}."
-					
+				
 			#将本地未加密的git仓库压缩打包到临时操作目录中去
-			cd ${base_dir}
 			
 			#--strip-components 1 去除一级目录
-			tar -xzf "${iter_file}.tar.gz" -C `dirname "${iter_file}"` --strip-components 1
+			tar -xzf "${iter_file}.tar.gz" -C "${iter_dst_dir}/.git" --strip-components 1
 			ret=$?
 			rm "${iter_file}.tar.gz" -Rf
 			cd - > /dev/null
 			if [ $ret -ne 0 ]; then
 				log_error "${LINENO}:tar "${iter_file}" : $ret"
-				cd -
+				cd - > /dev/null
 				return 1
 			fi 
 
@@ -352,11 +355,11 @@ function git_add_changes()
 	local iter_src_dir="${base_dir}/.git"  
     local iter_dst_dir="${base_dir}/${private_prj_name}/.git.private"
     if [ -d "${iter_dst_dir}" ]; then
-        rm -Rvf "${iter_dst_dir}"
+        rm -Rf "${iter_dst_dir}"
     fi 
     mkdir -p "${iter_dst_dir}"
 	# *不能拷贝隐藏文件，所以需要用.
-    cp "${iter_src_dir}/."  "${iter_dst_dir}/" -Rvf
+    cp "${iter_src_dir}/."  "${iter_dst_dir}/" -Rf
 	cd "${iter_dst_dir}/../"
 	git add "./." -f
     # 将本地未加密的git仓库压缩打包到临时操作目录中去

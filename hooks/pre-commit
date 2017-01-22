@@ -10,7 +10,7 @@
 set -x
 echo "pre-commit $@"
 
-export PRE_COMMIT_H="post-commit"
+export PRE_COMMIT_H="pre-commit"
 # echo "include $PRE_COMMIT_H"
 
 # 获取当前脚本的相对路径文件名称
@@ -24,10 +24,14 @@ PRE_COMMIT_FILE_BASE_NAME=`basename ${PRE_COMMIT_FILE}`
 # 备份当前路径
 PRE_COMMIT_STACK_ABS_DIR=`pwd`
 
-commit_msg=$(cat .git/COMMIT_EDITMSG)
+last_commit_msg=$(cat .git/COMMIT_EDITMSG)
+last_last_commit_msg=$(cat .git/LAST_LAST_COMMIT_EDITMSG)
+if [ -f .git/COMMIT_EDITMSG ]; then
+	cp -f .git/COMMIT_EDITMSG .git/LAST_LAST_COMMIT_EDITMSG
+fi
 pwd
 . ./.git/hooks/log_util.sh
-if [[ "${commit_msg}"x != "GodBlessMe"x ]]; then
+if [[ "${last_commit_msg}"x != "GodBlessMe"x || "${last_last_commit_msg}"x != "GodBlessMe"x ]]; then
 	exit 0
 fi
 log_info "${LINENO}:  Enter into GodBlessMe Mode..."

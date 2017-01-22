@@ -40,7 +40,7 @@ if [ $ret -ne 0 ]; then
     log_error "${LINENO}:  failed : $ret.EXIT"
     git reset --hard
     exit 1
-fi 
+fi
 
 cd "${POST_COMMIT_STACK_ABS_DIR}"
 ./.git/hooks/git_ssl.sh compress_and_encrypt `cd .; pwd` - -
