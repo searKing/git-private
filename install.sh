@@ -32,13 +32,6 @@ if [ $ret -ne 0 ]; then
 	safe_exit 1
 fi
 
-git reset --hard
-ret=$?
-if [ $ret -ne 0 ]; then
-	log_error "[${FUNCNAME}]${LINENO}:  failed : $ret. EXIT"
-	safe_exit 1
-fi
-
 if [[ "$(pwd)"x == "/"x ]]; then
 	log_error "${LINENO}:  GIT_PRIVATE_INSTALL dir is /, no parent dir. EXIT"
 	safe_exit 1

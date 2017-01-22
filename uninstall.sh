@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 if [ ! -z "$GIT_PRIVATE_UNINSTALL_H" ]; then
         return
 fi
@@ -29,13 +30,6 @@ GIT_PRIVATE_INSTALL_H=""
 ret=$?
 if [ $ret -ne 0 ]; then
 	log_error "${LINENO}:  failed. EXIT"
-	safe_exit 1
-fi
-
-git reset --hard
-ret=$?
-if [ $ret -ne 0 ]; then
-	log_error "${LINENO}:  failed : $ret.EXIT"
 	safe_exit 1
 fi
 
@@ -83,15 +77,17 @@ log_info "${LINENO}: copying hooks's shell scripts..."
 cp -Rvf ./src/bash/* ../.git/hooks/
 
 private_prj_name=".${prj_name}.private"
+cached_prj_name=".${prj_name}.cached"
 log_info "${LINENO}: removing private prj: ${private_prj_name} ..."
 
 if [ -d "../${private_prj_name}" ]; then
 	rm -Rvf "../${private_prj_name}"
 fi
-if [ -d "../${private_prj_name}.git" ]; then
-	rm -Rvf "../${private_prj_name}.git"
-fi
 
+log_info "${LINENO}: removing cached prj: ${cached_prj_name} ..."
+if [ -d "../${cached_prj_name}" ]; then
+	rm -Rvf "../${cached_prj_name}"
+fi
 log_info "$0 $@ running success"
 # read -n1 -p "Press any key to continue..."
 safe_exit 0 
