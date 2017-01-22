@@ -1,4 +1,5 @@
 #!/bin/bash
+#set -x
 if [ ! -z "$GIT_SSL_H" ]; then
         return
 fi
@@ -175,7 +176,6 @@ function compress_and_encrypt()
 	if [[ "$public_key_name"x == "-"x ]]; then
 		public_key_name="${g_git_public_key_name}"
 	fi
-	log_info "${LINENO}:ergodic ${base_dir} to compress and encrypt every file."
 
 	local prj_name=$(cd ${base_dir}; basename $(pwd))
 	local private_prj_name=".${prj_name}.private"
@@ -192,43 +192,46 @@ function compress_and_encrypt()
 		# 源文件只是change，不是rm，所以需要压缩加密
 		# 对于目录，显然不需要加密
 		if [[ -f "$iter_src_file" ]]; then
-				log_info "${LINENO}:compress ${iter_src_file} to ${iter_dst_file}."
-				#将本地未加密的git仓库压缩打包到临时操作目录中去
-				local tmp_dst_dir=`dirname ${iter_dst_file}.tar.gz`
-				if [ ! -d  "${tmp_dst_dir}" ]; then
-					mkdir -p "${tmp_dst_dir}"
-				fi
-				local tmp_src_dir=`dirname ${iter_src_file}`
-				local tmp_src_name=`basename ${iter_src_file}`
-				
-				`cd "${tmp_src_dir}"; tar -czf "${iter_dst_file}.tar.gz" "${tmp_src_name}"`
-				if [[ $ret -ne 0 ]]; then
-					log_error "${LINENO}:tar "${iter_src_file}" : $ret"
-					cd -
-					return 1
-				fi
+			echo -e "#\c"
+			#log_info "${LINENO}:compress ${iter_src_file} to ${iter_dst_file}."
+			#将本地未加密的git仓库压缩打包到临时操作目录中去
+			local tmp_dst_dir=`dirname ${iter_dst_file}.tar.gz`
+			if [ ! -d  "${tmp_dst_dir}" ]; then
+				mkdir -p "${tmp_dst_dir}"
+			fi
+			local tmp_src_dir=`dirname ${iter_src_file}`
+			local tmp_src_name=`basename ${iter_src_file}`
+			
+			`cd "${tmp_src_dir}"; tar -czf "${iter_dst_file}.tar.gz" "${tmp_src_name}"`
+			if [[ $ret -ne 0 ]]; then
+				log_error "${LINENO}:tar "${iter_src_file}" : $ret"
+				cd -
+				return 1
+			fi
 
-				log_info "${LINENO}:encrypt ${iter_dst_file}."
-				#使用证书加密文件
-				#-encrypt：用给定的接受者的证书加密邮件信息。输入文件是一个消息值，用于加密。输出文件是一个已经被加密了的MIME格式的邮件信息。
-				#-des, -des3, -seed, -rc2-40, -rc2-64, -rc2-128, -aes128, -aes192, -aes256，-camellia128, -camellia192, -camellia256：指定的私钥保护加密算法。默认的算法是rc2-40。
-				#-binary：不转换二进制消息到文本消息值
-				#-outform SMIME|PEM|DER：输出格式。一般为SMIME、PEM、DER三种。默认的格式是SMIME
-				#-in file：输入消息值，它一般为加密了的以及签名了的MINME类型的消息值。
-				#-out file：已经被解密或验证通过的数据的保存位置。
-				#
-				openssl smime -encrypt -aes256 -binary -outform DEM -in "${iter_dst_file}.tar.gz" -out "${iter_dst_file}" "${key_root_dir}/${public_key_name}" 
-				ret=$?
-				rm "${iter_dst_file}.tar.gz" -Rf
-				if [ $ret -ne 0 ]; then
-					log_error "${LINENO}: openssl smimee -encrypt failed : $ret.EXIT"
-					cd -
-					return 1
-				fi
-
+			#log_info "${LINENO}:encrypt ${iter_dst_file}."
+			#使用证书加密文件
+			#-encrypt：用给定的接受者的证书加密邮件信息。输入文件是一个消息值，用于加密。输出文件是一个已经被加密了的MIME格式的邮件信息。
+			#-des, -des3, -seed, -rc2-40, -rc2-64, -rc2-128, -aes128, -aes192, -aes256，-camellia128, -camellia192, -camellia256：指定的私钥保护加密算法。默认的算法是rc2-40。
+			#-binary：不转换二进制消息到文本消息值
+			#-outform SMIME|PEM|DER：输出格式。一般为SMIME、PEM、DER三种。默认的格式是SMIME
+			#-in file：输入消息值，它一般为加密了的以及签名了的MINME类型的消息值。
+			#-out file：已经被解密或验证通过的数据的保存位置。
+			#
+			openssl smime -encrypt -aes256 -binary -outform DEM -in "${iter_dst_file}.tar.gz" -out "${iter_dst_file}" "${key_root_dir}/${public_key_name}" 
+			ret=$?
+			rm "${iter_dst_file}.tar.gz" -Rf
+			if [ $ret -ne 0 ]; then
+				log_error "${LINENO}: openssl smimee -encrypt failed : $ret.EXIT"
+				cd -
+				return 1
+			fi
+		else
+			echo -e ".\c"
 		fi
 		
 	done
+	echo ""
 	cd -
 
 }
@@ -278,18 +281,21 @@ function decrypt_and_decompress()
 	for file in `find . -print0 -name "*" | xargs -i -0 echo {}`
 	do
 		if [[ "${file}"x == ""x || "${file}"x == "."x || "${file}"x == ".."x ]]; then
+			echo -e ".\c"
 			continue
 		fi
 		if [ -d "${file}" ]; then
+			echo -e ".\c"
 			continue
 		fi
+		echo -e "#\c"
 	
 		local iter_file="${iter_dst_dir}/${file}"  
-		echo "iter_file=$iter_file"
+		#echo "iter_file=$iter_file"
 		# 源文件只是change，不是rm，所以需要压缩加密
 		# 对于目录，显然不需要加密
 		if [[ -f "$iter_file" ]]; then
-			log_info "${LINENO}:decrypt ${iter_file}."
+			#log_info "${LINENO}:decrypt ${iter_file}."
 				
 			#使用证书解密文件
 			#-decrypt：用提供的证书和私钥值来解密邮件信息值。从输入文件中获取到已经加密了的MIME格式的邮件信息值。解密的邮件信息值被保存到输出文件中。
@@ -307,7 +313,7 @@ function decrypt_and_decompress()
 				return 1
 			fi	
 				
-			log_info "${LINENO}:decompress ${iter_file}."
+			#log_info "${LINENO}:decompress ${iter_file}."
 				
 			#将本地未加密的git仓库压缩打包到临时操作目录中去
 			
@@ -321,7 +327,6 @@ function decrypt_and_decompress()
 			#tar -xzf "${iter_file}.tar.gz" -C "${iter_dst_dir}/.git" # --strip-components 1
 			ret=$?
 			rm "${iter_file}.tar.gz" -Rf
-			cd - > /dev/null
 			if [ $ret -ne 0 ]; then
 				log_error "${LINENO}:tar "${iter_file}" : $ret"
 				cd - > /dev/null
@@ -331,6 +336,7 @@ function decrypt_and_decompress()
 		fi
 		
 	done
+	echo ""
 	git reset --hard
 	cd -
 	return 0

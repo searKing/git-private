@@ -1,4 +1,5 @@
 #!/bin/bash
+#set -x
 if [ ! -z "$GIT_PRIVATE_INSTALL_H" ]; then
         return
 fi

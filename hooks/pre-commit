@@ -7,7 +7,7 @@
 #
 # To enable this hook, rename this file to "pre-commit".
 
-set -x
+#set -x
 echo "pre-commit $@"
 
 export PRE_COMMIT_H="pre-commit"
@@ -52,5 +52,7 @@ if [[ $ret -ne 0 ]]; then
     git reset --hard
     exit 1
 fi 
-
+prj_name=$(basename $(pwd))
+public_prj_name=".${prj_name}.public"
+log_info "${LINENO}:  God Have Bless You ..., recover everything under `cd ./${public_prj_name}/; pwd`"
 exit 0

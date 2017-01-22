@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+#set -x
 echo "post-commit $@"
 
 export POST_COMMIT_H="post-commit"
