@@ -77,6 +77,21 @@ if [ $ret -ne 0 ]; then
 	ret=$?
     exit 1
 fi 
+
+cd "${POST_COMMIT_STACK_ABS_DIR}"
+cached_prj_name=".${prj_name}.cached"
+cd "${cached_prj_name}"
+log_info "${LINENO}: git commit ${cached_prj_name}..."
+git commit -m "$commit_msg"
+ret=$?
+cd -
+if [ $ret -ne 0 ]; then
+    log_error "${LINENO}:  failed : $ret.EXIT"
+	cd "${private_prj_name}"
+    git reset --hard
+	ret=$?
+    exit 1
+fi 
 cd "${POST_COMMIT_STACK_ABS_DIR}"
 
 exit 0

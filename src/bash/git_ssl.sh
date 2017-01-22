@@ -179,29 +179,30 @@ function compress_and_encrypt()
 
 	local prj_name=$(cd ${base_dir}; basename $(pwd))
 	local private_prj_name=".${prj_name}.private"
+	local cached_prj_name=".${prj_name}.cached"
 	log_info "${LINENO}: scaning ${private_prj_name} to compress and encrypt every file ..."
-	local iter_src_dir="${base_dir}/.git"  
-    local iter_dst_dir="${base_dir}/${private_prj_name}/.git.private"
+    local iter_cached_dir="${base_dir}/${cached_prj_name}"
+    local iter_dst_dir="${base_dir}/${private_prj_name}"
 	# 切换到加密根目录
-	cd "${iter_dst_dir}/../"
+	cd "${iter_cached_dir}/"
 	for file in `git diff --cached --name-only`
 	do
-		local iter_file="${iter_dst_dir}/../${file}"  
-		echo "iter_file=$iter_file"
+		local iter_src_file="${iter_cached_dir}/${file}"  
+		local iter_dst_file="${iter_dst_dir}/${file}"  
 		# 源文件只是change，不是rm，所以需要压缩加密
 		# 对于目录，显然不需要加密
-		if [[ -f "$iter_file" ]]; then
-				log_info "${LINENO}:compress ${iter_file}."
+		if [[ -f "$iter_src_file" ]]; then
+				log_info "${LINENO}:compress ${iter_src_file} to ${iter_dst_file}."
 				#将本地未加密的git仓库压缩打包到临时操作目录中去
-				tar -czf "${iter_file}.tar.gz" "${iter_file}"
+				tar -czf "${iter_dst_file}.tar.gz" "${iter_src_file}"
 				cd -
 				if [ $ret -ne 0 ]; then
-					log_error "${LINENO}:tar "${iter_file}" : $ret"
+					log_error "${LINENO}:tar "${iter_src_file}" : $ret"
 					cd -
 					return 1
 				fi
 
-				log_info "${LINENO}:encrypt ${iter_file}."
+				log_info "${LINENO}:encrypt ${iter_dst_file}."
 				#使用证书加密文件
 				#-encrypt：用给定的接受者的证书加密邮件信息。输入文件是一个消息值，用于加密。输出文件是一个已经被加密了的MIME格式的邮件信息。
 				#-des, -des3, -seed, -rc2-40, -rc2-64, -rc2-128, -aes128, -aes192, -aes256，-camellia128, -camellia192, -camellia256：指定的私钥保护加密算法。默认的算法是rc2-40。
@@ -210,9 +211,9 @@ function compress_and_encrypt()
 				#-in file：输入消息值，它一般为加密了的以及签名了的MINME类型的消息值。
 				#-out file：已经被解密或验证通过的数据的保存位置。
 				#
-				openssl smime -encrypt -aes256 -binary -outform DEM -in "${iter_file}.tar.gz" -out "${iter_file}" "${key_root_dir}/${public_key_name}" 
+				openssl smime -encrypt -aes256 -binary -outform DEM -in "${iter_dst_file}.tar.gz" -out "${iter_dst_file}" "${key_root_dir}/${public_key_name}" 
 				ret=$?
-				rm "${iter_file}.tar.gz" -Rf
+				rm "${iter_dst_file}.tar.gz" -Rf
 				if [ $ret -ne 0 ]; then
 					log_error "${LINENO}: openssl smimee -encrypt failed : $ret.EXIT"
 					cd -
@@ -350,10 +351,10 @@ function git_add_changes()
 	# 遍历当前工程，将已受控目录备份至加密文件夹，git add预处理
 	
 	prj_name=$(cd ${base_dir}; basename $(pwd))
-	private_prj_name=".${prj_name}.private"
-	log_info "${LINENO}: scaning ${prj_name} to update ${private_prj_name} ..."
+	cached_prj_name=".${prj_name}.cached"
+	log_info "${LINENO}: scaning ${prj_name} to update ${cached_prj_name} ..."
 	local iter_src_dir="${base_dir}/.git"  
-    local iter_dst_dir="${base_dir}/${private_prj_name}/.git.private"
+    local iter_dst_dir="${base_dir}/${cached_prj_name}/.git.private"
     if [ -d "${iter_dst_dir}" ]; then
         rm -Rf "${iter_dst_dir}"
     fi 
