@@ -25,12 +25,16 @@ url="$2"
 pwd
 . ./.git/hooks/log_util.sh
 
-git push -f "$remote" master
-ret=$?
-if [ $ret -ne 0 ]; then
-	log_error "${LINENO}:  failed : $ret.EXIT"
-	git reset --hard
-	exit 1
+prj_name=$(basename $(pwd))
+private_prj_name=".${prj_name}.private"
+if [ -d "${private_prj_name}" ]; then
+	`cd "${private_prj_name}";	git push -f "$remote" master`
+	ret=$?
+	if [ $ret -ne 0 ]; then
+		log_error "${LINENO}:  failed : $ret.EXIT"
+		git reset --hard
+		exit 1
+	fi
 fi
 
 exit 0
