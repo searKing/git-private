@@ -361,6 +361,11 @@ function git_add_changes()
     mkdir -p "${iter_dst_dir}"
 	# *不能拷贝隐藏文件，所以需要用.
     cp "${iter_src_dir}/."  "${iter_dst_dir}/" -Rf
+	if [ ! -d "${iter_dst_dir}/../.git"  ]; then
+		log_error "${LINENO}: ${iter_dst_dir}/../.git is not exist.EXIT"
+		cd "${base_dir}"; git reset --hard; cd -
+		safe_exit 1
+	fi
 	cd "${iter_dst_dir}/../"
 	git add "./." -f
     # 将本地未加密的git仓库压缩打包到临时操作目录中去
