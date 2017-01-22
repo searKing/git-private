@@ -67,6 +67,7 @@ fi
 
 cd "${POST_COMMIT_STACK_ABS_DIR}"
 cd "${private_prj_name}"
+git add "./." -f
 git commit -m "$commit_msg"
 ret=$?
 cd -
