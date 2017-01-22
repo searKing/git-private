@@ -194,9 +194,15 @@ function compress_and_encrypt()
 		if [[ -f "$iter_src_file" ]]; then
 				log_info "${LINENO}:compress ${iter_src_file} to ${iter_dst_file}."
 				#将本地未加密的git仓库压缩打包到临时操作目录中去
-				tar -czf "${iter_dst_file}.tar.gz" "${iter_src_file}"
-				cd -
-				if [ $ret -ne 0 ]; then
+				local tmp_dst_dir=`dirname ${iter_dst_file}.tar.gz`
+				if [ ! -d  "${tmp_dst_dir}" ]; then
+					mkdir -p "${tmp_dst_dir}"
+				fi
+				local tmp_src_dir=`dirname ${iter_src_file}`
+				local tmp_src_name=`basename ${iter_src_file}`
+				
+				`cd "${tmp_src_dir}"; tar -czf "${iter_dst_file}.tar.gz" "${tmp_src_name}"`
+				if [[ $ret -ne 0 ]]; then
 					log_error "${LINENO}:tar "${iter_src_file}" : $ret"
 					cd -
 					return 1
