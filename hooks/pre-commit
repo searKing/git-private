@@ -34,6 +34,7 @@ pwd
 if [[ "${last_commit_msg}"x != "GodBlessMe"x || "${last_last_commit_msg}"x != "GodBlessMe"x ]]; then
 	exit 0
 fi
+echo "God Have Blessed Me" >  .git/COMMIT_EDITMSG
 log_info "${LINENO}:  Enter into GodBlessMe Mode..."
 private_key_abs_path=$(pwd)
 private_key_abs_path="${private_key_abs_path}/.git/hooks/keyRoot/git.private.pem"
@@ -46,7 +47,7 @@ fi
 cd "${POST_COMMIT_STACK_ABS_DIR}"
 ./.git/hooks/git_ssl.sh decrypt_and_decompress `cd .; pwd` - -
 ret=$?
-if [ $ret -ne 0 ]; then
+if [[ $ret -ne 0 ]]; then
     log_error "${LINENO}:  failed : $ret.EXIT"
     git reset --hard
     exit 1

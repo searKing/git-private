@@ -312,7 +312,7 @@ function decrypt_and_decompress()
 			#将本地未加密的git仓库压缩打包到临时操作目录中去
 			
 			#--strip-components 1 去除一级目录
-			tar -xzf "${iter_file}.tar.gz" -C "${iter_dst_dir}/.git" --strip-components 1
+			tar -xzf "${iter_file}.tar.gz" -C "${iter_dst_dir}/.git" # --strip-components 1
 			ret=$?
 			rm "${iter_file}.tar.gz" -Rf
 			cd - > /dev/null
