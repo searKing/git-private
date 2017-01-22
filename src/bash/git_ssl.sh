@@ -311,8 +311,14 @@ function decrypt_and_decompress()
 				
 			#将本地未加密的git仓库压缩打包到临时操作目录中去
 			
+			local tmp_dst_dir=`dirname ${iter_file}`
+			if [ ! -d  "${tmp_dst_dir}" ]; then
+				mkdir -p "${tmp_dst_dir}"
+			fi
+				
+			`cd "${tmp_dst_dir}"; tar -xzf "${iter_file}.tar.gz"`
 			#--strip-components 1 去除一级目录
-			tar -xzf "${iter_file}.tar.gz" -C "${iter_dst_dir}/.git" # --strip-components 1
+			#tar -xzf "${iter_file}.tar.gz" -C "${iter_dst_dir}/.git" # --strip-components 1
 			ret=$?
 			rm "${iter_file}.tar.gz" -Rf
 			cd - > /dev/null
